@@ -1,3 +1,7 @@
+# all-in-one workflow since tags pushed with 'secrets.GITHUB_TOKEN'
+# do not trigger other workflows (on.push.tags).
+# https://github.community/t/action-does-not-trigger-another-on-push-tag-action/17148/4
+
 name: Bump and Build
 on:
   push:
