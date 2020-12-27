@@ -5,7 +5,7 @@ set -o errexit
 set -o nounset
 [ "${DEBUG:=false}" = true ] && set -o xtrace
 
-: "${DOCKER_IMAGE:=jetson-flash:1}"
+: "${DOCKER_IMAGE:=ghcr.io/pgils/docker-jetson-flash:latest}"
 
 # parse all `jetson-flash` flags to keep getopts going is
 # case of 'invalid option'.
