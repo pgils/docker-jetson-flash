@@ -1,0 +1,3 @@
+[submodule "docker/jetson-flash"]
+	path = docker/jetson-flash
+	url = https://github.com/balena-os/jetson-flash.git
