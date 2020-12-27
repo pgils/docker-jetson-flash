@@ -42,3 +42,4 @@ jobs:
         file: ./docker/Dockerfile
         push: true
         tags: ${{ steps.prepare.outputs.tag }}
+        lables: org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY
