@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+
+set -o errexit
+set -o nounset
+[ "${DEBUG:=false}" = true ] && set -o xtrace
+
+: "${DOCKER_IMAGE:=jetson-flash:1}"
+
+# parse all `jetson-flash` flags to keep getopts going is
+# case of 'invalid option'.
+while getopts ":f:m:o:ps:" opt; do
+    case "$opt" in
+        f)
+            image_file=$OPTARG
+            extra_docker_args+=(-v "$image_file":"$image_file")
+            ;;
+        m)  machine=$OPTARG ;;
+        o)
+            echo "ERROR: Specifying output dir is not supported."
+            echo "A named docker volume is used: jetson-flash-\$machine"
+            exit 1
+            ;;
+        p)  persist=true ;;
+        s)  rootfs_size=$OPTARG
+            # https://stackoverflow.com/a/806923/14209915
+            if ! [[ $rootfs_size =~ ^[0-9]+$ ]] ; then
+                echo "ERROR: Not a valid rootfs size" >&2; exit 1
+            fi
+            ;;
+        *)  ;; # ignore but keep going
+    esac
+done
+
+# Use a named volume for specific machine as flashtools (in BSP) differ per machine
+if [ "${persist:=false}" = "true" ]; then
+    extra_docker_args+=(-v "jetson-flash-$machine":/persist-work)
+    extra_jetsonflash_args+=(-o /persist-work)
+fi
+
+if [ "${rootfs_size:-}" ]; then
+    extra_docker_args+=(-e "MACHINE=$machine")
+    extra_docker_args+=(-e "ROOTFS_SIZE=$rootfs_size")
+fi
+
+docker run --rm --net=host \
+    -v /run/udev/control:/run/udev/control \
+    -v /dev:/dev \
+    --privileged \
+    -e "DEBUG=$DEBUG" \
+    "${extra_docker_args[@]}" \
+    "$DOCKER_IMAGE" \
+    "$@" "${extra_jetsonflash_args[@]}"
