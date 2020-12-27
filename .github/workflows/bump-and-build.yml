@@ -1,13 +1,8 @@
-# all-in-one workflow since tags pushed with 'secrets.GITHUB_TOKEN'
-# do not trigger other workflows (on.push.tags).
-# https://github.community/t/action-does-not-trigger-another-on-push-tag-action/17148/4
-
-name: Bump and Build
+name: Bump Docker image
 on:
   push:
-    branches:
-      - main
-      - develop
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -15,14 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        fetch-depth: '0'
         submodules: 'recursive'
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@1.33.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-        RELEASE_BRANCHES: main
     - name: Docker meta
       id: docker_meta
       uses: crazy-max/ghaction-docker-meta@v1
@@ -35,7 +23,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
+        password: ${{ secrets.PAT }}
     - name: Push to GitHub Packages
       uses: docker/build-push-action@v2
       with:
