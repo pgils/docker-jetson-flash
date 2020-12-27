@@ -26,4 +26,4 @@ Example for a 950MiB root partition:
 $ ./djetson-flash -m jetson-nano-emmc -f balena.img -s 998244352
 ```
 
-[jetson-flash](https://github.com/balena-os/jetson-flash).
+[jetson-flash]:https://github.com/balena-os/jetson-flash
