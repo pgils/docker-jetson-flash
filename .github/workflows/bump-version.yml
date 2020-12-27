@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - rel
+
+# this will not trigger the build pipeline
+# https://github.community/t/action-does-not-trigger-another-on-push-tag-action/17148/4
 jobs:
   build:
     runs-on: ubuntu-latest
