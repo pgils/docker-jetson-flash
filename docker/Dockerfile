@@ -1,10 +1,13 @@
-FROM node:15-buster as build
+FROM node:fermium-buster as build
 
 COPY jetson-flash /jetson-flash
 WORKDIR /jetson-flash
+# remove symlink to non-existing parent .git
+# to prevent breaking some node module builds.
+RUN rm .git
 RUN npm install
 
-FROM node:15-buster-slim
+FROM node:fermium-buster-slim
 
 # https://github.com/hadolint/hadolint/wiki/DL3009
 RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
