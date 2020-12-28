@@ -12,6 +12,23 @@ die() {
     exit 1
 }
 
+# Convert number with binary prefix to bytes
+# e.g. '10M' --> 10485760
+size_convert() {
+    # IEC units
+    declare -A units=([B]=0 [K]=1 [M]=2 [G]=3 [T]=4)
+
+    unit=${1##*[0-9]}
+    size=${1/$unit/}
+    ! [[ $size =~ ^[0-9]+$ ]] && die "invalid size: '$1'"
+    # default to bytes if no prefix given
+    multi=${units[${unit:=B}]}
+    [ -n "${multi}" ] || die "invalid size unit: '$unit'. Valid options: B K M G T"
+
+    size_bytes=$(("$size" * 1024 ** "$multi"))
+    echo "$size_bytes"
+}
+
 # Parse command line arguments
 #
 # valid argument formats:
@@ -66,9 +83,7 @@ while true; do
             ;&
         -s=?*|--size=?*)
             : "${rootfs_size:=${1#*=}}"
-            if ! [[ $rootfs_size =~ ^[0-9]+$ ]] ; then
-                die "Not a valid rootfs size"
-            fi
+            rootfs_size=$(size_convert "$rootfs_size")
             ;;
 
         # pass-through other options to jetson-flash
