@@ -7,37 +7,117 @@ set -o nounset
 
 : "${DOCKER_IMAGE:=ghcr.io/pgils/docker-jetson-flash:latest}"
 
-# parse all `jetson-flash` flags to keep getopts going is
-# case of 'invalid option'.
-while getopts ":f:m:o:ps:" opt; do
-    case "$opt" in
-        f)
-            image_file=$OPTARG
-            extra_docker_args+=(-v "$image_file":"$image_file")
+die() {
+    printf "[\033[1;34mx\033[0m] \033[1;34mERROR\033[0m: %s\n" "${1}" >&2
+    exit 1
+}
+
+# Convert number with binary prefix to bytes
+# e.g. '10M' --> 10485760
+size_convert() {
+    # IEC units
+    declare -A units=([B]=0 [K]=1 [M]=2 [G]=3 [T]=4)
+
+    unit=${1##*[0-9]}
+    size=${1/$unit/}
+    ! [[ $size =~ ^[0-9]+$ ]] && die "invalid size: '$1'"
+    # default to bytes if no prefix given
+    multi=${units[${unit:=B}]}
+    [ -n "${multi}" ] || die "invalid size unit: '$unit'. Valid options: B K M G T"
+
+    size_bytes=$(("$size" * 1024 ** "$multi"))
+    echo "$size_bytes"
+}
+
+# Parse command line arguments
+#
+# valid argument formats:
+#   -o value
+#   -o=value
+#   --option value
+#   --option=value
+#
+while true; do
+    shiftpos=1
+    unset path source_path
+
+    case "${1:-}" in
+        # Machine type
+        -m|--machine)
+            machine="$2"
+            shiftpos=2
+            ;&
+        -m=?*|--machine=?*)
+            : "${machine:=${1#*=}}"
+            jetsonflash_args+=("${1%=*}" "$2")
             ;;
-        m)  machine=$OPTARG ;;
-        o)
-            echo "ERROR: Specifying output dir is not supported."
-            echo "A named docker volume is used: jetson-flash-\$machine"
-            exit 1
+        
+        # Volume mounts for input file and persistent output dir
+        -o|--output) ;&
+        -f|--file)
+            : "${source_path:=$2}"
+            shiftpos=2
+            ;;&
+        -o=?*|--output=?*) ;&
+        -f=?*|--file=?*)
+            : "${source_path=${1#*=}}"
+            ;;&
+        -o*|--output*)
+            path="$(readlink -f "$source_path")" \
+                || die "Parent dir does not exist for: $source_path"
+            ;;&
+        -f*|--file*)
+            # image file must exist (-e)
+            path="$(readlink -e "$source_path")" \
+                || die "File does not exist: $source_path"
+            ;;&
+        *-o*|*-f*)
+            extra_docker_args+=(-v "$path":"$path")
+            jetsonflash_args+=("${1%=*}" "$path")
             ;;
-        p)  persist=true ;;
-        s)  rootfs_size=$OPTARG
-            # https://stackoverflow.com/a/806923/14209915
-            if ! [[ $rootfs_size =~ ^[0-9]+$ ]] ; then
-                echo "ERROR: Not a valid rootfs size" >&2; exit 1
-            fi
+
+        # Customized root partition size
+        -s|--size)
+            rootfs_size="$2"
+            shiftpos=2
+            ;&
+        -s=?*|--size=?*)
+            : "${rootfs_size:=${1#*=}}"
+            rootfs_size=$(size_convert "$rootfs_size")
             ;;
-        *)  ;; # ignore but keep going
+
+        # pass-through other options to jetson-flash
+        -?*)
+            jetsonflash_args+=("$1")
+            ;;
+
+        # no more options to parse
+        *)  break ;;
     esac
+
+    shift $shiftpos
 done
 
-# Use a named volume for specific machine as flashtools (in BSP) differ per machine
-if [ "${persist:=false}" = "true" ]; then
+# find option in $jetsonflash_args using regex.
+#
+#   'args_contain '-m'' will return true if
+#   '-m' or '--machine' is present in $jetsonflash_args
+#
+args_contain() {
+    for opt in "${jetsonflash_args[@]}"; do
+        [[ "$opt" =~ $1 ]] && return 0
+    done
+    return 1
+}
+
+# Use a named volume for persistent workdir if not specified.
+# Machine is appended as flashtools (in BSP) differ per machine.
+if args_contain '-p|--persistent' && ! args_contain '-o|--output'; then
     extra_docker_args+=(-v "jetson-flash-$machine":/persist-work)
-    extra_jetsonflash_args+=(-o /persist-work)
+    jetsonflash_args+=(-o /persist-work)
 fi
 
+# Variables for entrypoint.sh to set root partition size
 if [ "${rootfs_size:-}" ]; then
     extra_docker_args+=(-e "MACHINE=$machine")
     extra_docker_args+=(-e "ROOTFS_SIZE=$rootfs_size")
@@ -50,4 +130,4 @@ docker run --rm --tty --net=host \
     -e "DEBUG=$DEBUG" \
     "${extra_docker_args[@]}" \
     "$DOCKER_IMAGE" \
-    "$@" "${extra_jetsonflash_args[@]}"
+    "${jetsonflash_args[@]}"
