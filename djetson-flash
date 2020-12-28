@@ -55,12 +55,12 @@ while true; do
         # Volume mounts for input file and persistent output dir
         -o|--output) ;&
         -f|--file)
-            : "${source_path:=$2}"
+            source_path="$2"
             shiftpos=2
             ;;&
         -o=?*|--output=?*) ;&
         -f=?*|--file=?*)
-            : "${source_path=${1#*=}}"
+            source_path="${1#*=}"
             ;;&
         -o*|--output*)
             path="$(readlink -f "$source_path")" \
