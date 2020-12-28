@@ -43,7 +43,7 @@ if [ "${rootfs_size:-}" ]; then
     extra_docker_args+=(-e "ROOTFS_SIZE=$rootfs_size")
 fi
 
-docker run --rm --net=host \
+docker run --rm --tty --net=host \
     -v /run/udev/control:/run/udev/control \
     -v /dev:/dev \
     --privileged \
