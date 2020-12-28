@@ -1,7 +1,12 @@
 # docker-jetson-flash
 A Docker-ised [balena-os/jetson-flash][jetson-flash].
 
-It runs with following options and is not secure:
+## Requirements
+- Docker
+- bash
+
+## Warnings
+`djetson-flash` runs a docker container with following options making it insecure:
 - `--privileged`
 - `--net=host`
 - `-v /dev:/dev`
