@@ -9,6 +9,6 @@ jobs:
     - name: Run ShellCheck
       uses: ludeeus/action-shellcheck@master
     - name: Run Hadolint
-      uses: brpaz/hadolint-action@v1.2.1
+      uses: brpaz/hadolint-action@v1.3.1
       with:
         dockerfile: docker/Dockerfile
