@@ -3,7 +3,7 @@ A Docker-ised [balena-os/jetson-flash][jetson-flash].
 
 ## Requirements
 - Docker
-- bash
+- bash >= 4.0
 
 ## Warnings
 `djetson-flash` runs a docker container with following options making it insecure:
