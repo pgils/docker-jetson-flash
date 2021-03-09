@@ -50,7 +50,6 @@ while true; do
             : "${machine:=${1#*=}}"
             jetsonflash_args+=("${1%=*}" "$2")
             ;;
-        
         # Volume mounts for input file and persistent output dir
         -o|--output) ;&
         -f|--file)
@@ -62,13 +61,16 @@ while true; do
             source_path="${1#*=}"
             ;;&
         -o*|--output*)
-            path="$(readlink -f "$source_path")" \
-                || die "Parent dir does not exist for: $source_path"
+            # try to create the output directory
+            mkdir -p "$source_path" \
+                || die "Failed creating output directory: $source_path"
+            path="$(readlink -f "$source_path")"
             ;;&
         -f*|--file*)
-            # image file must exist (-e)
-            path="$(readlink -e "$source_path")" \
-                || die "File does not exist: $source_path"
+            # image file must exist
+            if ! path="$(readlink -f "$source_path")" || ! [ -e "$path" ]; then \
+                die "File does not exist: $source_path"
+            fi
             ;;&
         *-o*|*-f*)
             extra_docker_args+=(-v "$path":"$path")
