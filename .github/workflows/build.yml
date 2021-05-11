@@ -13,7 +13,7 @@ jobs:
         submodules: 'recursive'
     - name: Docker meta
       id: docker_meta
-      uses: crazy-max/ghaction-docker-meta@v2
+      uses: crazy-max/ghaction-docker-meta@v3
       with:
         images: ghcr.io/pgils/docker-jetson-flash
     - name: Set up Docker Buildx
