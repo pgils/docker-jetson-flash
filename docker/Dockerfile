@@ -4,8 +4,8 @@ COPY jetson-flash /jetson-flash
 WORKDIR /jetson-flash
 # remove symlink to non-existing parent .git
 # to prevent breaking some node module builds.
-RUN rm .git
-RUN npm install
+RUN rm -f .git \
+    && npm install
 
 FROM node:fermium-buster-slim
 
