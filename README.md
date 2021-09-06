@@ -26,9 +26,9 @@ $ ./djetson-flash -m jetson-nano-emmc -f balena.img -s 950M
 ```
 
 ### Typical usage example
-Flash a Jetson nano with a root partition size of 950MB and make work directory persist:
+Flash a Jetson nano device and preserve work directory as a docker volume:
 ```
-$ djetson-flash -m jetson-nano-emmc -s 950M -p -f resin-image-jetson-nano-20201224170905.rootfs.resinos-img
+$ djetson-flash -m jetson-nano-emmc -p -f resin-image-jetson-nano-20201224170905.rootfs.resinos-img
 ```
 
 [jetson-flash]:https://github.com/balena-os/jetson-flash
