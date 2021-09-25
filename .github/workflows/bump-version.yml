@@ -16,3 +16,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PAT }}
         WITH_V: true
         RELEASE_BRANCHES: main
+
+    - name: Set version in script
+    # Update the first occurence of VERSION
+      run: >
+        sed -ie
+        '0,/VERSION=/{s/VERSION=.*/VERSION=${{ steps.tag_action.outputs.tag }}/}'
+        djetson-flash
+
+    - name: Commit version update
+      uses: EndBug/add-and-commit@v7
+      with:
+        default_author: github_actions
+        message: 'Update VERSION'
+        add: 'djetson-flash --force'
+        tag: '${{ steps.tag_action.outputs.tag }} --force'

@@ -1,4 +1,4 @@
-FROM node:fermium-buster as build
+FROM node:12-buster as build
 
 COPY jetson-flash /jetson-flash
 WORKDIR /jetson-flash
@@ -7,7 +7,7 @@ WORKDIR /jetson-flash
 RUN rm -f .git \
     && npm install
 
-FROM node:fermium-buster-slim
+FROM node:12-buster-slim
 
 # https://github.com/hadolint/hadolint/wiki/DL3009
 RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
