@@ -23,7 +23,7 @@ prepare_image() {
                 | sort -nr | head -1 | cut -d' ' -f2)
             ln -s "$largest_file" "$image_file"
             ;;
-        *.@(gz|bz2|xz|zstd))
+        *.@(gz|bz2|xz|zst))
             bsdcat "$image_input_file" > "$image_file"
             ;;
         *)
