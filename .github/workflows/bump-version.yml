@@ -32,3 +32,4 @@ jobs:
         message: 'Update VERSION'
         add: 'djetson-flash --force'
         tag: '${{ steps.tag_action.outputs.tag }} --force'
+        tag_push: '--force'
