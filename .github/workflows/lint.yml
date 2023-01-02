@@ -7,7 +7,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run ShellCheck
-      uses: ludeeus/action-shellcheck@master
+      uses: ludeeus/action-shellcheck@1.1.0
+      with:
+       version: v0.9.0
     - name: Run Hadolint
       uses: brpaz/hadolint-action@v1.5.0
       with:
