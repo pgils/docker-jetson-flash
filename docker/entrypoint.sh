@@ -47,8 +47,8 @@ args=("$@")
 # Replace the argument to --file option with an uncompressed/renamed version
 for i in "${!args[@]}"; do
    if [[ "${args[$i]}" =~ -f|--file ]]; then
-        old_image=${args[(($i+1))]}
-        args[(($i+1))]=$(set -e; prepare_image "$old_image")
+        old_image=${args[i+1]}
+        args[i+1]=$(set -e; prepare_image "$old_image")
    fi
 done
 
