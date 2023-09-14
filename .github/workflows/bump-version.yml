@@ -1,33 +1,42 @@
 name: Bump version
+
 on:
+
   push:
     branches:
       - main
+
 jobs:
+
   bump-version:
+
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
+
     steps:
-    - uses: actions/checkout@v4
+    -
+      uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-    - name: Bump version and push tag
+    -
+      name: Bump version and push tag
       id: tag_action
       uses: anothrNick/github-tag-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
         RELEASE_BRANCHES: main
-
-    - name: Set version in script
-    # Update the first occurence of VERSION
+    -
+      name: Set version in script
+      # Update the first occurrence of VERSION
       run: >
         sed -ie
         '0,/VERSION=/{s/VERSION=.*/VERSION=${{ steps.tag_action.outputs.tag }}/}'
         djetson-flash
-
-    - name: Commit version update
+    -
+      name: Commit version update
       uses: EndBug/add-and-commit@v9
       with:
         default_author: github_actions
